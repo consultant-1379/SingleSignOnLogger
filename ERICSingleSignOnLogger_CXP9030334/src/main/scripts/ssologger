@@ -1,0 +1,155 @@
+#!/bin/sh
+#
+### BEGIN INIT INFO
+# Provides: 
+# Required-Start: $local_fs $remote_fs $network $syslog rhnsd
+# Required-Stop: $local_fs $remote_fs $network $syslog rhnsd
+# Should-Start:
+# Should-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Start and Stop the scripts responsible for redirecting OpenAM logs to Syslog
+# Description: This wrapper calls UpdateSymLink.sh and SSO-log-collector.sh in order to redirect OpenAM logs to Syslog
+### END INIT INFO
+TARGET_DIR="/opt/ericsson/sso/logger/bin"
+
+case "$1" in
+  start)
+        
+	isLogRunning=$(pgrep SSO-log-collect | wc -l)
+	isUpdateRunning=$(pgrep UpdateSymLink | wc -l)
+        if [[ $isLogRunning -ne 0 && $isUpdateRunning -ne 0 ]]; then
+        echo ssologger is already running
+        exit 0
+        fi
+
+	if [[ $isLogRunning -eq 0 && $isUpdateRunning -ne 0 ]]; then
+         echo  updateSymlink is already running, starting SSO-log-collector... 
+         $TARGET_DIR/SSO-log-collector.sh & 2>&1 >/dev/null
+	 sleep 2 
+	 ssoLoggerStarted=$(pgrep SSO-log-collect | wc -l) 
+	 if [ $soLoggerStarted -eq 1 ]; then
+           echo SSO-log-collector is running
+	   exit 0
+	 fi
+	fi
+
+	if [[ $isLogRunning -ne 0 && $isUpdateRunning -eq 0 ]]; then
+         echo  SSO-log-collector is already running, starting updateSymlink...
+         $TARGET_DIR/UpdateSymLink.sh & 2>&1 >/dev/null
+	 sleep 2
+	 updatesymlinkRunning=$(pgrep UpdateSymLink | wc -l)
+         if [ $updatesymlinkRunning -eq 1 ]; then
+           echo UpdateSymLink is running
+           exit 0
+          fi
+        fi
+
+	$TARGET_DIR/UpdateSymLink.sh & 2>&1 >/dev/null
+	sleep 2 
+	updatesymlinkRunning=$(pgrep UpdateSymLink | wc -l)
+	if [ $updatesymlinkRunning -eq 1 ]; then
+    	 echo updateSymlink is running
+	 updateStatus=0
+	fi
+	
+	$TARGET_DIR/SSO-log-collector.sh & 2>&1 >/dev/null
+	sleep 2
+	ssoLoggerStarted=$(pgrep SSO-log-collect | wc -l)
+	if [ $ssoLoggerStarted -eq 1 ]; then
+         echo SSO-log-collector is running
+	 logStatus=0
+        fi
+	
+	if [[ $updateStatus -eq 0 && $logStatus -eq 0 ]]; then
+         echo "all started "
+	 exit 0
+        fi
+	 exit 1
+        ;;
+  stop)
+        
+	UpdatePID=$(pgrep UpdateSymLink)
+	if [ $? -eq 0 ]; then
+        	kill -TERM $UpdatePID
+		UpdateStopped=0
+        fi
+
+	SSOloggerPID=$(pgrep SSO-log-collect)
+	if [ $? -eq 0 ]; then
+		TailPID=$(ps -elf | grep tail | grep $SSOloggerPID | awk '{print $4}')
+                kill -TERM $TailPID
+        	SSOloggerStopped=0
+	fi
+ 
+	if [[ $UpdateStopped -eq 0 && $SSOloggerStopped -eq 0 ]]; then
+        exit 0
+	else
+	exit 1
+        fi
+        ;;
+  restart)
+	isLogRunning=$(pgrep SSO-log-collect | wc -l)
+        isUpdateRunning=$(pgrep UpdateSymLink | wc -l)
+        if [[ $isLogRunning -eq 0 && $isUpdateRunning -eq 0 ]]; then
+          echo ssologger is not running
+          exit 0
+        fi
+
+	service ssologger stop
+	if [ $? -eq 0 ]; then
+                echo ssologger is stopped
+		Stopped=0
+		sleep 4
+	fi
+	service ssologger start
+        if [ $? -eq 0 ]; then
+                echo ssologger is started
+        	Started=0
+	fi
+	if [[ $Stopped -eq 0 && $Started -eq 0 ]]; then
+		exit 0;
+	fi
+	exit 1;
+        ;;
+  try-restart|condrestart)
+        exit 0
+	;;
+  reload)
+        exit 0
+	;;
+  force-reload)
+        exit 0
+	;;
+  status)
+       
+	isLogRunning=$(ps -ef | grep SSO-log-collector.sh | grep -v "grep" | wc -l)
+	isUpdateRunning=$(ps -ef | grep UpdateSymLink.sh | grep -v "grep" | wc -l)
+	if [[ $isLogRunning -eq 0 && $isUpdateRunning -eq 0 ]]; then
+        echo ssologger is stopped
+        exit 0
+	fi
+
+	if [[ $isLogRunning -ne 0 && $isUpdateRunning -eq 0 ]]; then
+        echo updateSymlink is stopped but SSO-log-collector is running
+        exit 0
+	fi
+
+	if [[ $isLogRunning -eq 0 && $isUpdateRunning -ne 0 ]]; then
+        echo SSO-log-collector is stopped but updateSymlink is running
+        exit 0
+	fi
+
+	if [[ $isLogRunning -ne 0 && $isUpdateRunning -ne 0 ]]; then
+        echo ssologger is running
+        exit 0
+	fi	
+
+        #RETVAL=$?
+        ;;
+  	*)
+        echo "Usage: $0 {start|stop|restart|try-restart|reload|force-reload|status}"
+        RETVAL=2
+esac
+
+exit $RETVAL

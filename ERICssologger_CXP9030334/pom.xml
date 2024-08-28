@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<artifactId>SingleSignOnLogger</artifactId>
+		<groupId>com.ericsson.nms.sso</groupId>
+		<version>1.1.9-SNAPSHOT</version>
+	</parent>
+	<artifactId>ERICssologger_CXP9030334</artifactId>
+	<packaging>${rpm.packaging}</packaging>
+       
+         <name>[${project.parent.artifactId}] CXP module</name>
+
+  <properties>
+    <com.ericsson.oss.rpm.architecture>noarch</com.ericsson.oss.rpm.architecture>
+    <!-- Install path = /${rpm-root}/${comp-name}/${install-path} -->
+    <rpm-root>opt</rpm-root>
+    <comp-name>ericsson</comp-name>
+    <install-path>com.ericsson.oss.ci-archetypes</install-path>
+    <publish_artifact>true</publish_artifact>
+  </properties>
+
+  <build>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>rpm-maven-plugin</artifactId>
+				<configuration>
+					<prefix>/etc/init.d</prefix>
+					<mappings>
+						<mapping>
+							<directory>/etc/init.d</directory>
+							<directoryIncluded>false</directoryIncluded>
+							<filemode>775</filemode>
+							<username>root</username>
+							<groupname>root</groupname>
+							<configuration>false</configuration>
+							<dependency />
+							<sources>
+								<source>
+									<location>src/main/scripts</location>
+									<includes>
+										<include>ssologger</include>
+									</includes>
+									<filter>true</filter>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/opt/ericsson/sso/logger/bin</directory>
+							<directoryIncluded>false</directoryIncluded>
+							<filemode>775</filemode>
+							<username>root</username>
+							<groupname>root</groupname>
+							<configuration>false</configuration>
+							<dependency />
+							<sources>
+								<source>
+									<location>src/main/scripts</location>
+									<includes>
+										<include>UpdateSymLink.sh</include>
+										<include>SSO-log-collector.sh</include>
+									</includes>
+									<filter>true</filter>
+								</source>
+							</sources>
+						</mapping>
+						<mapping>
+							<directory>/opt/ericsson/sso/logger/bin/healthchecks</directory>
+							<directoryIncluded>false</directoryIncluded>
+							<filemode>775</filemode>
+							<username>root</username>
+							<groupname>root</groupname>
+							<configuration>false</configuration>
+							<dependency />
+							<sources>
+								<source>
+									<location>src/main/scripts</location>
+									<includes>
+										<include>ssologger_service_hc.bsh</include>
+									</includes>
+									<filter>true</filter>
+								</source>
+							</sources>
+						</mapping>
+					</mappings>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+<!--
+	<build>
+		<outputDirectory>${project.parent.artifactId}-${project.version}</outputDirectory>
+	</build>
+-->
+</project>

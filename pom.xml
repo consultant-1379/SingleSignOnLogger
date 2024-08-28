@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.ericsson.nms</groupId>
+		<artifactId>integration</artifactId>
+		<version>15.2.0.20</version>
+	</parent>
+	<groupId>com.ericsson.nms.sso</groupId>
+	<artifactId>SingleSignOnLogger</artifactId>
+	<version>1.1.9-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<name>[${project.artifactId}] JEE6 Project</name>
+  
+
+  <properties>
+  	<version.jboss-as-maven-plugin>${version.jboss.as}</version.jboss-as-maven-plugin>
+  	<version.jboss.as>7.1.2.Final-redhat-1</version.jboss.as>
+  </properties>
+
+  <build>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-dependency-plugin</artifactId>
+										<versionRange>[2.4,)</versionRange>
+										<goals>
+											<goal>analyze-dep-mgt</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-ear-plugin</artifactId>
+										<versionRange>[2.7,)</versionRange>
+										<goals>
+											<goal>generate-application-xml</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>com.ericsson.maven.plugins</groupId>
+										<artifactId>rstate-maven-plugin</artifactId>
+										<versionRange>[1.0,)</versionRange>
+										<goals>
+											<goal>rstate</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore />
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.jboss.as.plugins</groupId>
+				<artifactId>jboss-as-maven-plugin</artifactId>
+				<version>${version.jboss-as-maven-plugin}</version>
+				<configuration>
+					<filename>${project.parent.artifactId}.${project.packaging}</filename>
+					<skip>false</skip>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<modules>
+    	<module>SingleSignOnLogger-jar</module>
+    	<module>ERICssologger_CXP9030334</module>
+  </modules>
+</project>
